@@ -1,0 +1,231 @@
+
+mysql> show databases;
++------------------------+
+| Database               |
++------------------------+
+| companydb              |
+| da7                    |
+| information_schema     |
+| interview_queue        |
+| jeevan_raksha_pharmacy |
+| mysql                  |
+| performance_schema     |
+| pfs7                   |
+| sys                    |
++------------------------+
+9 rows in set (0.01 sec)
+
+mysql> use interview_queue;
+Database changed
+mysql> sow tables;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'sow tables' at line 1
+mysql> show tables;
++---------------------------+
+| Tables_in_interview_queue |
++---------------------------+
+| candidates                |
+| interview_queue           |
+| interviewers              |
++---------------------------+
+3 rows in set (0.02 sec)
+
+mysql> desc candidates;
++-------------------+--------------+------+-----+-------------------+-------------------+
+| Field             | Type         | Null | Key | Default           | Extra             |
++-------------------+--------------+------+-----+-------------------+-------------------+
+| candidate_id      | int          | NO   | PRI | NULL              | auto_increment    |
+| candidate_name    | varchar(100) | NO   |     | NULL              |                   |
+| phone             | varchar(15)  | YES  |     | NULL              |                   |
+| email             | varchar(100) | YES  |     | NULL              |                   |
+| job_role          | varchar(100) | YES  |     | NULL              |                   |
+| experience_years  | int          | YES  |     | 0                 |                   |
+| registration_time | datetime     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-------------------+--------------+------+-----+-------------------+-------------------+
+7 rows in set (0.01 sec)
+
+mysql> CREATE TABLE candidates (    candidate_id INT PRIMARY KEY AUTO_INCREMENT,    candidate_name VARCHAR(100) NOT NULL,    phone VARCHAR(15),    email VARCHAR(100),    job_role VARCHAR(100),    experience_years INT DEFAULT 0,    registration_time DATETIME DEFAULT CURRENT_TIMESTAMP);
+ERROR 1050 (42S01): Table 'candidates' already exists
+mysql> ^C
+mysql> INSERT INTO candidates
+    -> (candidate_name, phone, email, job_role, experience_years)
+    -> VALUES
+    -> ('Rahul', '9876500001', 'rahul@example.com', 'SQL Developer', 0),
+    -> ('Sneha', '9876500002', 'sneha@example.com', 'HR Executive', 1),
+    -> ('Arjun', '9876500003', 'arjun@example.com', 'SQL Developer', 0),
+    -> ('Priya', '9876500004', 'priya@example.com', 'Data Analyst', 1),
+    -> ('Kiran', '9876500005', 'kiran@example.com', 'SQL Developer', 2);
+Query OK, 5 rows affected (0.03 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO interviewers
+    -> (interviewer_name, department, average_interview_minutes)
+    -> VALUES
+    -> ('Mr. Kumar', 'IT', 20),
+    -> ('Ms. Anjali', 'HR', 15);
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO interview_queue
+    -> (candidate_id, interviewer_id, token_number, queue_position)
+    -> VALUES
+    -> (1, 1, 'IT-001', 1),
+    -> (2, 2, 'HR-001', 1),
+    -> (3, 1, 'IT-002', 2),
+    -> (4, 1, 'IT-003', 3),
+    -> (5, 1, 'IT-004', 4);
+ERROR 1062 (23000): Duplicate entry 'IT-001' for key 'interview_queue.token_number'
+mysql> INSERT INTO candidates
+    -> (candidate_name, phone, email, job_role, experience_years)
+    -> VALUES
+    -> ('Rahul', '9876500001', 'rahul@example.com', 'SQL Developer', 0),
+    -> ('Sneha', '9876500002', 'sneha@example.com', 'HR Executive', 1),
+    -> ('Arjun', '9876500003', 'arjun@example.com', 'SQL Developer', 0),
+    -> ('Priya', '9876500004', 'priya@example.com', 'Data Analyst', 1),
+    -> ('Kiran', '9876500005', 'kiran@example.com', 'SQL Developer', 2);
+Query OK, 5 rows affected (0.02 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO interviewers
+    -> (interviewer_name, department, average_interview_minutes)
+    -> VALUES
+    -> ('Mr. Kumar', 'IT', 20),
+    -> ('Ms. Anjali', 'HR', 15);
+Query OK, 2 rows affected (0.00 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO interview_queue
+    -> (candidate_id, interviewer_id, token_number, queue_position)
+    -> VALUES
+    -> (1, 1, 'IT-001', 1),
+    -> (2, 2, 'HR-001', 2),
+    -> (3, 1, 'IT-002', 3),
+    -> (4, 1, 'IT-003', 4),
+    -> (5, 1, 'IT-004', 5);
+ERROR 1062 (23000): Duplicate entry 'IT-001' for key 'interview_queue.token_number'
+mysql> SELECT c.candidate_name,
+    ->        c.job_role,
+    ->        q.token_number,
+    ->        q.queue_position,
+    ->        q.status
+    -> FROM candidates c
+    -> JOIN interview_queue q
+    ->   ON c.candidate_id = q.candidate_id
+    -> WHERE q.status = 'Waiting'
+    -> ORDER BY q.queue_position;
++----------------+---------------+--------------+----------------+---------+
+| candidate_name | job_role      | token_number | queue_position | status  |
++----------------+---------------+--------------+----------------+---------+
+| Rahul          | SQL Developer | IT-001       |              1 | Waiting |
+| Sneha          | HR Executive  | HR-001       |              1 | Waiting |
+| Arjun          | SQL Developer | IT-002       |              2 | Waiting |
+| Priya          | Data Analyst  | IT-003       |              3 | Waiting |
+| Kiran          | SQL Developer | IT-004       |              4 | Waiting |
++----------------+---------------+--------------+----------------+---------+
+5 rows in set (0.01 sec)
+
+mysql> SELECT c.candidate_name,
+    ->        q.token_number,
+    ->        q.queue_position
+    -> FROM candidates c
+    -> JOIN interview_queue q
+    ->   ON c.candidate_id = q.candidate_id
+    -> WHERE q.status = 'Waiting'
+    -> ORDER BY q.queue_position
+    -> LIMIT 1;
++----------------+--------------+----------------+
+| candidate_name | token_number | queue_position |
++----------------+--------------+----------------+
+| Rahul          | IT-001       |              1 |
++----------------+--------------+----------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT c.candidate_name,
+    ->        q.token_number,
+    ->        q.queue_position,
+    ->        (q.queue_position - 1)
+    ->          * i.average_interview_minutes
+    ->          AS estimated_wait_minutes
+    -> FROM candidates c
+    -> JOIN interview_queue q
+    ->   ON c.candidate_id = q.candidate_id
+    -> JOIN interviewers i
+    ->   ON q.interviewer_id = i.interviewer_id
+    -> WHERE q.status = 'Waiting';
++----------------+--------------+----------------+------------------------+
+| candidate_name | token_number | queue_position | estimated_wait_minutes |
++----------------+--------------+----------------+------------------------+
+| Rahul          | IT-001       |              1 |                      0 |
+| Sneha          | HR-001       |              1 |                      0 |
+| Arjun          | IT-002       |              2 |                     20 |
+| Priya          | IT-003       |              3 |                     40 |
+| Kiran          | IT-004       |              4 |                     60 |
++----------------+--------------+----------------+------------------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT status, COUNT(*) AS total_candidates
+    -> FROM interview_queue
+    -> GROUP BY status;
++---------+------------------+
+| status  | total_candidates |
++---------+------------------+
+| Waiting |                5 |
++---------+------------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT i.interviewer_name,
+    ->        COUNT(q.queue_id) AS total_assigned,
+    ->        SUM(
+    ->          CASE WHEN q.status = 'Waiting'
+    ->               THEN 1 ELSE 0 END
+    ->        ) AS waiting_candidates
+    -> FROM interviewers i
+    -> LEFT JOIN interview_queue q
+    ->   ON i.interviewer_id = q.interviewer_id
+    -> GROUP BY i.interviewer_id, i.interviewer_name;
++------------------+----------------+--------------------+
+| interviewer_name | total_assigned | waiting_candidates |
++------------------+----------------+--------------------+
+| Mr. Kumar        |              4 |                  4 |
+| Ms. Anjali       |              1 |                  1 |
+| Mr. Kumar        |              0 |                  0 |
+| Ms. Anjali       |              0 |                  0 |
+| Mr. Kumar        |              0 |                  0 |
+| Ms. Anjali       |              0 |                  0 |
+| Mr. Kumar        |              0 |                  0 |
+| Ms. Anjali       |              0 |                  0 |
++------------------+----------------+--------------------+
+8 rows in set (0.01 sec)
+
+mysql> UPDATE interview_queue
+    -> SET status = 'In Interview',
+    ->     interview_start = CURRENT_TIMESTAMP
+    -> WHERE token_number = 'IT-001'
+    ->   AND status = 'Waiting';
+Query OK, 1 row affected (0.02 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE interview_queue
+    -> SET status = 'Selected',
+    ->     interview_end = CURRENT_TIMESTAMP
+    -> WHERE token_number = 'IT-001'
+    ->   AND status = 'In Interview';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select*from interview_queue;
++----------+--------------+----------------+--------------+----------------+----------+---------------------+---------------------+
+| queue_id | candidate_id | interviewer_id | token_number | queue_position | status   | interview_start     | interview_end       |
++----------+--------------+----------------+--------------+----------------+----------+---------------------+---------------------+
+|        1 |            1 |              1 | IT-001       |              1 | Selected | 2026-10-26 11:25:11 | 2026-10-26 11:25:33 |
+|        2 |            2 |              2 | HR-001       |              1 | Waiting  | NULL                | NULL                |
+|        3 |            3 |              1 | IT-002       |              2 | Waiting  | NULL                | NULL                |
+|        4 |            4 |              1 | IT-003       |              3 | Waiting  | NULL                | NULL                |
+|        5 |            5 |              1 | IT-004       |              4 | Waiting  | NULL                | NULL                |
++----------+--------------+----------------+--------------+----------------+----------+---------------------+---------------------+
+5 rows in set (0.00 sec)
+
+mysql>
